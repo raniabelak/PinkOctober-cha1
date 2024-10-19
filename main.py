@@ -1,41 +1,40 @@
 import numpy as np
 import pandas as pd
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import accuracy_score
 from sklearn.preprocessing import StandardScaler
-from sklearn.model_selection import train_test_split
 
+# Load data
 train_data = pd.read_csv('data/train.csv')
 test1_data = pd.read_csv('data/test.csv')
 
+# Check for missing values
 print(train_data.isnull().sum())
 print(test1_data.isnull().sum())
 
-X = train_data.drop(columns=['id', 'diagnosis'])
-y = train_data['diagnosis'].map({'B': 0, 'M': 1}).astype(int)
+# Prepare features and target
+X_train = train_data.drop(columns=['id', 'diagnosis'])
+y_train = train_data['diagnosis']  # Keep 'M' and 'B' as is
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20, random_state=42) 
-
+# Prepare test data
 X_test1 = test1_data.drop(columns=['id'])
 
+# Scale the features
 scaler = StandardScaler()
 X_train_scaled = scaler.fit_transform(X_train)
-X_test_scaled = scaler.transform(X_test)
 X_test1_scaled = scaler.transform(X_test1)
 
+# Create and train the model
 model = LogisticRegression(max_iter=2000)
-
 model.fit(X_train_scaled, y_train)
 
-predictions = model.predict(X_test_scaled)
+# Make predictions on test data
 predictions1 = model.predict(X_test1_scaled)
 
+# Create DataFrame with predictions
 predictions1_df = pd.DataFrame({
     'id': test1_data['id'],
     'predicted_diagnosis': predictions1
 })
 
-predictions1_df.to_csv('data/predictions.csv', index=False)
-
-accuracy = accuracy_score(y_test, predictions)
-print(f'Accuracy: {accuracy:.2f}')
+# Save predictions to CSV
+predictions1_df.to_csv('data/predictions1_df.csv', index=False)
